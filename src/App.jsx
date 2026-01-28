@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import Sidebar from './components/Sidebar';
+import ControlPanel from './components/ControlPanel';
 import PatternCanvas from './components/PatternCanvas';
 import './App.css';
 
@@ -355,30 +355,10 @@ export default function App() {
   }, []);
 
   const isDepthTopo = activeTab === 'depthtopo';
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
 
   return (
     <>
-      <Sidebar
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        patternModule={patternModule}
-        params={params}
-        onParamChange={handleParamChange}
-        onPresetApply={handlePresetApply}
-        style={style}
-        onStyleChange={handleStyleChange}
-        onRandomize={handleRandomize}
-        onUndo={handleUndo}
-        onExportSVG={handleExportSVG}
-        onExportPNG={handleExportPNG}
-        onCopySVG={handleCopySVG}
-        onDepthImageUpload={handleDepthImageUpload}
-        onRegenerateAI={handleRegenerateAI}
-        depthStatusText={depthStatusText}
-        depthTopoParams={allParams.depthtopo}
-        onDepthTopoParamChange={handleDepthTopoParamChange}
-      />
-
       <div className="canvas-area">
         {!isDepthTopo && (
           <PatternCanvas
@@ -405,6 +385,29 @@ export default function App() {
           </div>
         )}
       </div>
+
+      <ControlPanel
+        isOpen={isPanelOpen}
+        onToggle={() => setIsPanelOpen(prev => !prev)}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        patternModule={patternModule}
+        params={params}
+        onParamChange={handleParamChange}
+        onPresetApply={handlePresetApply}
+        style={style}
+        onStyleChange={handleStyleChange}
+        onRandomize={handleRandomize}
+        onUndo={handleUndo}
+        onExportSVG={handleExportSVG}
+        onExportPNG={handleExportPNG}
+        onCopySVG={handleCopySVG}
+        onDepthImageUpload={handleDepthImageUpload}
+        onRegenerateAI={handleRegenerateAI}
+        depthStatusText={depthStatusText}
+        depthTopoParams={allParams.depthtopo}
+        onDepthTopoParamChange={handleDepthTopoParamChange}
+      />
     </>
   );
 }

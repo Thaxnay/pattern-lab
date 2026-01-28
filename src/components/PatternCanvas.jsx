@@ -12,7 +12,7 @@ const PatternCanvas = forwardRef(function PatternCanvas({ size, bgColor }, ref) 
   }, [size]);
 
   return (
-    <div id="canvas-container" style={{ background: bgColor }}>
+    <div id="canvas-container">
       <canvas ref={canvasRef} />
     </div>
   );

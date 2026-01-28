@@ -32,7 +32,10 @@ export default function ControlGroup({ control, value, onChange }) {
 
   return (
     <div className="control-group">
-      <label>{label}</label>
+      <label>
+        {label}
+        <span className="label-value">{value}{suffix || ''}</span>
+      </label>
       <input
         type="range"
         min={min}
@@ -41,7 +44,6 @@ export default function ControlGroup({ control, value, onChange }) {
         value={value}
         onChange={(e) => onChange(id, parseFloat(e.target.value))}
       />
-      <div className="value-display">{value}{suffix || ''}</div>
     </div>
   );
 }
