@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Lab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .controls {
+            width: 340px;
+            padding: 24px;
+            background: #141414;
+            overflow-y: auto;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        
+        .controls h1 {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            color: #666;
+        }
+        
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            flex: 1 1 auto;
+            min-width: 45px;
+            padding: 10px 6px;
+            background: #222;
+            border: 1px solid #333;
+            color: #666;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .tab:hover {
+            background: #2a2a2a;
+            color: #999;
+        }
+        
+        .tab.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: none;
+            background: #333;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            font-size: 10px;
+            color: #555;
+            margin-top: 4px;
+            font-family: monospace;
+        }
+        
+        .section-title {
+            font-size: 10px;
+            color: #444;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+        
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 14px;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #ccc;
+        }
+        
+        .btn.secondary {
+            background: #333;
+            color: #fff;
+        }
+        
+        .btn.secondary:hover {
+            background: #444;
+        }
+        
+        .pattern-controls {
+            display: none;
+        }
+        
+        .pattern-controls.active {
+            display: block;
+        }
+        
+        .canvas-area {
+            margin-left: 340px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+            min-height: 100vh;
+        }
+        
+        #canvas-container {
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        canvas {
+            border-radius: 4px;
+        }
+
+        /* Three-canvas layout for Depth Topo */
+        .triple-canvas-view {
+            display: none;
+            gap: 24px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .triple-canvas-view.active {
+            display: flex;
+        }
+
+        .canvas-preview-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .canvas-label {
+            font-size: 10px;
+            color: #666;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .triple-canvas-view canvas {
+            border-radius: 4px;
+            max-width: 350px;
+            max-height: 350px;
+        }
+
+        .control-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preset-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .preset-btn {
+            padding: 6px 10px;
+            background: #222;
+            border: 1px solid #333;
+            color: #777;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+    </style>
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+        // Configure transformers.js
+        env.allowLocalModels = false;
+
+        // Make pipeline available globally
+        window.TransformersDepthPipeline = null;
+        window.depthPipelineLoading = false;
+        window.depthPipelineReady = false;
+
+        // Initialize depth estimation pipeline
+        async function initDepthPipeline() {
+            if (window.depthPipelineLoading || window.depthPipelineReady) return;
+
+            window.depthPipelineLoading = true;
+            updateDepthStatus('Loading AI model (first time ~100MB)...');
+
+            try {
+                window.TransformersDepthPipeline = await pipeline(
+                    'depth-estimation',
+                    'Xenova/depth-anything-small-hf'
+                );
+                window.depthPipelineReady = true;
+                updateDepthStatus('AI model ready');
+                console.log('Depth estimation model loaded successfully');
+            } catch (error) {
+                console.error('Failed to load depth model:', error);
+                updateDepthStatus('Failed to load AI model - using luminance fallback');
+                window.depthPipelineLoading = false;
+            }
+        }
+
+        function updateDepthStatus(message) {
+            const el = document.getElementById('depthtopo-filename');
+            if (el) el.textContent = message;
+        }
+
+        // Expose to global scope
+        window.initDepthPipeline = initDepthPipeline;
+
+        // Auto-init when switching to depth topo tab
+        window.addEventListener('load', () => {
+            // Pre-load the model in background after page loads
+            setTimeout(() => {
+                if (document.getElementById('depthtopo-controls')) {
+                    initDepthPipeline();
+                }
+            }, 2000);
+        });
+    </script>
+</head>
+<body>
+    <div class="controls">
+        <h1>Pattern Lab</h1>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('flow')">Flow Field</div>
+            <div class="tab" onclick="switchTab('wave')">Wave</div>
+            <div class="tab" onclick="switchTab('topo')">Topo</div>
+            <div class="tab" onclick="switchTab('dots')">Dots</div>
+            <div class="tab" onclick="switchTab('net')">Network</div>
+            <div class="tab" onclick="switchTab('voronoi')">Voronoi</div>
+            <div class="tab" onclick="switchTab('hatch')">Hatch</div>
+            <div class="tab" onclick="switchTab('depthtopo')">Depth Topo</div>
+        </div>
+        
+        <!-- FLOW FIELD CONTROLS -->
+        <div id="flow-controls" class="pattern-controls active">
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyFlowPreset('calm')">Calm</button>
+                <button class="preset-btn" onclick="applyFlowPreset('turbulent')">Turbulent</button>
+                <button class="preset-btn" onclick="applyFlowPreset('streams')">Streams</button>
+                <button class="preset-btn" onclick="applyFlowPreset('vortex')">Vortex</button>
+                <button class="preset-btn" onclick="applyFlowPreset('silk')">Silk</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Particle Count</label>
+                <input type="range" id="flow-particles" min="100" max="3000" value="800" oninput="generateFlow()">
+                <div class="value-display" id="flow-particles-val">800</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Line Length</label>
+                <input type="range" id="flow-length" min="10" max="300" value="80" oninput="generateFlow()">
+                <div class="value-display" id="flow-length-val">80</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Noise Scale</label>
+                <input type="range" id="flow-scale" min="0.001" max="0.02" step="0.001" value="0.005" oninput="generateFlow()">
+                <div class="value-display" id="flow-scale-val">0.005</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Noise Octaves</label>
+                <input type="range" id="flow-octaves" min="1" max="6" value="2" oninput="generateFlow()">
+                <div class="value-display" id="flow-octaves-val">2</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Curve Strength</label>
+                <input type="range" id="flow-curve" min="0.5" max="8" step="0.1" value="2" oninput="generateFlow()">
+                <div class="value-display" id="flow-curve-val">2</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Stroke Width</label>
+                <input type="range" id="flow-stroke" min="0.25" max="3" step="0.25" value="0.5" oninput="generateFlow()">
+                <div class="value-display" id="flow-stroke-val">0.5</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Opacity</label>
+                <input type="range" id="flow-opacity" min="0.05" max="1" step="0.05" value="0.4" oninput="generateFlow()">
+                <div class="value-display" id="flow-opacity-val">0.4</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Seed</label>
+                <input type="range" id="flow-seed" min="1" max="9999" value="1234" oninput="generateFlow()">
+                <div class="value-display" id="flow-seed-val">1234</div>
+            </div>
+        </div>
+        
+        <!-- WAVE INTERFERENCE CONTROLS -->
+        <div id="wave-controls" class="pattern-controls">
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyWavePreset('ripple')">Ripple</button>
+                <button class="preset-btn" onclick="applyWavePreset('interference')">Interference</button>
+                <button class="preset-btn" onclick="applyWavePreset('dense')">Dense</button>
+                <button class="preset-btn" onclick="applyWavePreset('sparse')">Sparse</button>
+                <button class="preset-btn" onclick="applyWavePreset('chaos')">Chaos</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Wave Sources</label>
+                <input type="range" id="wave-sources" min="1" max="6" value="2" oninput="generateWave()">
+                <div class="value-display" id="wave-sources-val">2</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Wave Frequency</label>
+                <input type="range" id="wave-frequency" min="5" max="80" value="25" oninput="generateWave()">
+                <div class="value-display" id="wave-frequency-val">25</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Line Count</label>
+                <input type="range" id="wave-lines" min="20" max="200" value="80" oninput="generateWave()">
+                <div class="value-display" id="wave-lines-val">80</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Amplitude</label>
+                <input type="range" id="wave-amplitude" min="1" max="30" value="10" oninput="generateWave()">
+                <div class="value-display" id="wave-amplitude-val">10</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Decay</label>
+                <input type="range" id="wave-decay" min="0.001" max="0.01" step="0.001" value="0.003" oninput="generateWave()">
+                <div class="value-display" id="wave-decay-val">0.003</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Stroke Width</label>
+                <input type="range" id="wave-stroke" min="0.25" max="2" step="0.25" value="0.5" oninput="generateWave()">
+                <div class="value-display" id="wave-stroke-val">0.5</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Opacity</label>
+                <input type="range" id="wave-opacity" min="0.1" max="1" step="0.05" value="0.6" oninput="generateWave()">
+                <div class="value-display" id="wave-opacity-val">0.6</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Seed</label>
+                <input type="range" id="wave-seed" min="1" max="9999" value="1234" oninput="generateWave()">
+                <div class="value-display" id="wave-seed-val">1234</div>
+            </div>
+        </div>
+        
+        <!-- TOPOGRAPHIC CONTROLS -->
+        <div id="topo-controls" class="pattern-controls">
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyTopoPreset('organic')">Organic</button>
+                <button class="preset-btn" onclick="applyTopoPreset('terrain')">Terrain</button>
+                <button class="preset-btn" onclick="applyTopoPreset('fine')">Fine</button>
+                <button class="preset-btn" onclick="applyTopoPreset('bold')">Bold</button>
+            </div>
+
+            <div class="control-group">
+                <label>Contour Levels</label>
+                <input type="range" id="topo-levels" min="5" max="50" value="20" oninput="generateTopo()">
+                <div class="value-display" id="topo-levels-val">20</div>
+            </div>
+
+            <div class="control-group">
+                <label>Noise Scale</label>
+                <input type="range" id="topo-scale" min="0.002" max="0.02" step="0.001" value="0.006" oninput="generateTopo()">
+                <div class="value-display" id="topo-scale-val">0.006</div>
+            </div>
+
+            <div class="control-group">
+                <label>Noise Octaves</label>
+                <input type="range" id="topo-octaves" min="1" max="6" value="3" oninput="generateTopo()">
+                <div class="value-display" id="topo-octaves-val">3</div>
+            </div>
+
+            <div class="control-group">
+                <label>Smoothness</label>
+                <input type="range" id="topo-smooth" min="1" max="8" value="2" oninput="generateTopo()">
+                <div class="value-display" id="topo-smooth-val">2</div>
+            </div>
+
+            <div class="control-group">
+                <label>Warp</label>
+                <input type="range" id="topo-warp" min="0" max="100" value="0" oninput="generateTopo()">
+                <div class="value-display" id="topo-warp-val">0</div>
+            </div>
+
+            <div class="control-group">
+                <label>Stroke Width</label>
+                <input type="range" id="topo-stroke" min="0.25" max="3" step="0.25" value="0.75" oninput="generateTopo()">
+                <div class="value-display" id="topo-stroke-val">0.75</div>
+            </div>
+
+            <div class="control-group">
+                <label>Opacity</label>
+                <input type="range" id="topo-opacity" min="0.1" max="1" step="0.05" value="0.5" oninput="generateTopo()">
+                <div class="value-display" id="topo-opacity-val">0.5</div>
+            </div>
+
+            <div class="control-group">
+                <label>Seed</label>
+                <input type="range" id="topo-seed" min="1" max="9999" value="1234" oninput="generateTopo()">
+                <div class="value-display" id="topo-seed-val">1234</div>
+            </div>
+        </div>
+        
+        <!-- DOT MATRIX CONTROLS -->
+        <div id="dots-controls" class="pattern-controls">
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyDotsPreset('halftone')">Halftone</button>
+                <button class="preset-btn" onclick="applyDotsPreset('fine')">Fine</button>
+                <button class="preset-btn" onclick="applyDotsPreset('coarse')">Coarse</button>
+                <button class="preset-btn" onclick="applyDotsPreset('gradient')">Gradient</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Grid Size</label>
+                <input type="range" id="dots-grid" min="10" max="80" value="30" oninput="generateDots()">
+                <div class="value-display" id="dots-grid-val">30</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Max Dot Size</label>
+                <input type="range" id="dots-maxsize" min="2" max="20" value="8" oninput="generateDots()">
+                <div class="value-display" id="dots-maxsize-val">8</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Min Dot Size</label>
+                <input type="range" id="dots-minsize" min="0" max="5" step="0.5" value="0.5" oninput="generateDots()">
+                <div class="value-display" id="dots-minsize-val">0.5</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Noise Scale</label>
+                <input type="range" id="dots-scale" min="0.002" max="0.02" step="0.001" value="0.008" oninput="generateDots()">
+                <div class="value-display" id="dots-scale-val">0.008</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Opacity</label>
+                <input type="range" id="dots-opacity" min="0.1" max="1" step="0.05" value="0.7" oninput="generateDots()">
+                <div class="value-display" id="dots-opacity-val">0.7</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Seed</label>
+                <input type="range" id="dots-seed" min="1" max="9999" value="1234" oninput="generateDots()">
+                <div class="value-display" id="dots-seed-val">1234</div>
+            </div>
+        </div>
+        
+        <!-- NETWORK CONTROLS -->
+        <div id="net-controls" class="pattern-controls">
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyNetPreset('sparse')">Sparse</button>
+                <button class="preset-btn" onclick="applyNetPreset('dense')">Dense</button>
+                <button class="preset-btn" onclick="applyNetPreset('clustered')">Clustered</button>
+                <button class="preset-btn" onclick="applyNetPreset('web')">Web</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Node Count</label>
+                <input type="range" id="net-nodes" min="20" max="300" value="80" oninput="generateNet()">
+                <div class="value-display" id="net-nodes-val">80</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Connection Distance</label>
+                <input type="range" id="net-distance" min="30" max="200" value="80" oninput="generateNet()">
+                <div class="value-display" id="net-distance-val">80</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Node Size</label>
+                <input type="range" id="net-nodesize" min="1" max="8" value="2" oninput="generateNet()">
+                <div class="value-display" id="net-nodesize-val">2</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Line Width</label>
+                <input type="range" id="net-linewidth" min="0.25" max="2" step="0.25" value="0.5" oninput="generateNet()">
+                <div class="value-display" id="net-linewidth-val">0.5</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Opacity</label>
+                <input type="range" id="net-opacity" min="0.1" max="1" step="0.05" value="0.5" oninput="generateNet()">
+                <div class="value-display" id="net-opacity-val">0.5</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Seed</label>
+                <input type="range" id="net-seed" min="1" max="9999" value="1234" oninput="generateNet()">
+                <div class="value-display" id="net-seed-val">1234</div>
+            </div>
+        </div>
+
+        <!-- VORONOI CONTROLS -->
+        <div id="voronoi-controls" class="pattern-controls">
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyVoronoiPreset('cells')">Cells</button>
+                <button class="preset-btn" onclick="applyVoronoiPreset('giraffe')">Giraffe</button>
+                <button class="preset-btn" onclick="applyVoronoiPreset('organic')">Organic</button>
+                <button class="preset-btn" onclick="applyVoronoiPreset('foam')">Foam</button>
+            </div>
+
+            <div class="control-group">
+                <label>Cell Count</label>
+                <input type="range" id="voronoi-cells" min="10" max="300" value="50" oninput="generateVoronoi()">
+                <div class="value-display" id="voronoi-cells-val">50</div>
+            </div>
+
+            <div class="control-group">
+                <label>Gap Size</label>
+                <input type="range" id="voronoi-gap" min="0" max="30" value="8" oninput="generateVoronoi()">
+                <div class="value-display" id="voronoi-gap-val">8</div>
+            </div>
+
+            <div class="control-group">
+                <label>Corner Radius</label>
+                <input type="range" id="voronoi-radius" min="0" max="20" value="5" oninput="generateVoronoi()">
+                <div class="value-display" id="voronoi-radius-val">5</div>
+            </div>
+
+            <div class="control-group">
+                <label>Relaxation</label>
+                <input type="range" id="voronoi-relax" min="0" max="5" value="2" oninput="generateVoronoi()">
+                <div class="value-display" id="voronoi-relax-val">2</div>
+            </div>
+
+            <div class="control-group">
+                <label>Seed</label>
+                <input type="range" id="voronoi-seed" min="1" max="9999" value="1234" oninput="generateVoronoi()">
+                <div class="value-display" id="voronoi-seed-val">1234</div>
+            </div>
+        </div>
+
+        <!-- HATCH CONTROLS -->
+        <div id="hatch-controls" class="pattern-controls">
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyHatchPreset('smooth')">Smooth</button>
+                <button class="preset-btn" onclick="applyHatchPreset('rain')">Rain</button>
+                <button class="preset-btn" onclick="applyHatchPreset('wave')">Wave</button>
+                <button class="preset-btn" onclick="applyHatchPreset('chaotic')">Chaotic</button>
+            </div>
+
+            <div class="control-group">
+                <label>Grid Spacing</label>
+                <input type="range" id="hatch-spacing" min="8" max="60" value="24" oninput="generateHatch()">
+                <div class="value-display" id="hatch-spacing-val">24</div>
+            </div>
+
+            <div class="control-group">
+                <label>Line Length</label>
+                <input type="range" id="hatch-length" min="5" max="50" value="20" oninput="generateHatch()">
+                <div class="value-display" id="hatch-length-val">20</div>
+            </div>
+
+            <div class="control-group">
+                <label>Direction</label>
+                <input type="range" id="hatch-direction" min="0" max="360" value="45" oninput="generateHatch()">
+                <div class="value-display" id="hatch-direction-val">45°</div>
+            </div>
+
+            <div class="control-group">
+                <label>Variation</label>
+                <input type="range" id="hatch-variation" min="0" max="60" value="15" oninput="generateHatch()">
+                <div class="value-display" id="hatch-variation-val">15°</div>
+            </div>
+
+            <div class="control-group">
+                <label>Flow Scale</label>
+                <input type="range" id="hatch-scale" min="0.001" max="0.02" step="0.001" value="0.003" oninput="generateHatch()">
+                <div class="value-display" id="hatch-scale-val">0.003</div>
+            </div>
+
+            <div class="control-group">
+                <label>Stroke Width</label>
+                <input type="range" id="hatch-stroke" min="0.5" max="4" step="0.25" value="1.5" oninput="generateHatch()">
+                <div class="value-display" id="hatch-stroke-val">1.5</div>
+            </div>
+
+            <div class="control-group">
+                <label>Opacity</label>
+                <input type="range" id="hatch-opacity" min="0.1" max="1" step="0.05" value="0.9" oninput="generateHatch()">
+                <div class="value-display" id="hatch-opacity-val">0.9</div>
+            </div>
+
+            <div class="control-group">
+                <label>Seed</label>
+                <input type="range" id="hatch-seed" min="1" max="9999" value="1234" oninput="generateHatch()">
+                <div class="value-display" id="hatch-seed-val">1234</div>
+            </div>
+        </div>
+
+        <!-- DEPTH TOPO CONTROLS -->
+        <div id="depthtopo-controls" class="pattern-controls">
+            <div class="control-group">
+                <label>Upload Image</label>
+                <input type="file" id="depthtopo-file" accept="image/jpeg,image/png,image/webp" onchange="handleDepthTopoImageUpload(event)" style="display: none;">
+                <button class="btn secondary" onclick="document.getElementById('depthtopo-file').click()" style="width: 100%; margin-bottom: 8px;">
+                    Choose Image
+                </button>
+                <div class="value-display" id="depthtopo-filename">No image selected</div>
+                <button class="btn secondary" onclick="regenerateAIDepth()" style="width: 100%; margin-top: 8px; font-size: 9px;">
+                    Regenerate with AI
+                </button>
+            </div>
+
+            <div class="preset-row">
+                <button class="preset-btn" onclick="applyDepthTopoPreset('terrain')">Terrain</button>
+                <button class="preset-btn" onclick="applyDepthTopoPreset('fine')">Fine</button>
+                <button class="preset-btn" onclick="applyDepthTopoPreset('bold')">Bold</button>
+                <button class="preset-btn" onclick="applyDepthTopoPreset('minimal')">Minimal</button>
+            </div>
+
+            <div class="control-group">
+                <label>Contour Levels</label>
+                <input type="range" id="depthtopo-levels" min="5" max="50" value="20" oninput="generateDepthTopo()">
+                <div class="value-display" id="depthtopo-levels-val">20</div>
+            </div>
+
+            <div class="control-group">
+                <label>Line Width</label>
+                <input type="range" id="depthtopo-stroke" min="0.25" max="3" step="0.25" value="0.75" oninput="generateDepthTopo()">
+                <div class="value-display" id="depthtopo-stroke-val">0.75</div>
+            </div>
+
+            <div class="control-group">
+                <label>Opacity</label>
+                <input type="range" id="depthtopo-opacity" min="0.1" max="1" step="0.05" value="0.6" oninput="generateDepthTopo()">
+                <div class="value-display" id="depthtopo-opacity-val">0.6</div>
+            </div>
+
+            <div class="control-group">
+                <label>Smoothing</label>
+                <input type="range" id="depthtopo-smoothing" min="0" max="5" value="2" oninput="generateDepthTopo()">
+                <div class="value-display" id="depthtopo-smoothing-val">2</div>
+            </div>
+
+            <div class="control-group">
+                <label>Resolution (lower = more detail)</label>
+                <input type="range" id="depthtopo-resolution" min="1" max="8" value="3" oninput="generateDepthTopo()">
+                <div class="value-display" id="depthtopo-resolution-val">3</div>
+            </div>
+
+            <div class="control-group">
+                <label>Invert Depth</label>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="depthtopo-invert" onchange="generateDepthTopo()">
+                    <span class="value-display">Flip light/dark mapping</span>
+                </div>
+            </div>
+
+            <div class="section-title">Colors</div>
+
+            <div class="control-group">
+                <label>Contour Color</label>
+                <input type="color" id="depthtopo-contour-color" value="#ffffff" oninput="generateDepthTopo()">
+            </div>
+
+            <div class="control-group">
+                <label>Background Color</label>
+                <input type="color" id="depthtopo-bg-color" value="#1a4d5c" oninput="generateDepthTopo()">
+            </div>
+        </div>
+
+        <!-- SHARED STYLE CONTROLS -->
+        <div class="section-title">Style</div>
+        
+        <div class="control-group">
+            <label>Stroke Color</label>
+            <input type="color" id="strokeColor" value="#ffffff" oninput="regenerate()">
+        </div>
+        
+        <div class="control-group">
+            <label>Background Color</label>
+            <input type="color" id="bgColor" value="#1a4d5c" oninput="regenerate()">
+        </div>
+        
+        <div class="control-group">
+            <label>Canvas Size</label>
+            <input type="range" id="canvasSize" min="400" max="1200" step="100" value="700" oninput="regenerate()">
+            <div class="value-display" id="canvasSize-val">700</div>
+        </div>
+        
+        <div class="btn-row">
+            <button class="btn secondary" onclick="randomize()">Randomize</button>
+            <button class="btn secondary" onclick="undo()">Undo</button>
+        </div>
+        <div class="btn-row">
+            <button class="btn" onclick="exportSVG()">Export SVG</button>
+            <button class="btn" onclick="exportPNG()">Export PNG</button>
+        </div>
+        <button class="btn secondary" onclick="copySVG()" style="width: 100%; margin-top: 8px;">Copy SVG</button>
+    </div>
+    
+    <div class="canvas-area">
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- Three-canvas view for Depth Topo -->
+        <div id="depthtopo-canvas-container" class="triple-canvas-view">
+            <div class="canvas-preview-item">
+                <div class="canvas-label">Original</div>
+                <canvas id="canvas-original"></canvas>
+            </div>
+            <div class="canvas-preview-item">
+                <div class="canvas-label">Depth Map</div>
+                <canvas id="canvas-depthmap"></canvas>
+            </div>
+            <div class="canvas-preview-item">
+                <div class="canvas-label">Topo Result</div>
+                <canvas id="canvas-topo-result"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simplex noise implementation
+        class SimplexNoise {
+            constructor(seed = Math.random()) {
+                this.p = new Uint8Array(256);
+                this.perm = new Uint8Array(512);
+                this.permMod12 = new Uint8Array(512);
+                
+                const random = this.seededRandom(seed);
+                for (let i = 0; i < 256; i++) this.p[i] = i;
+                for (let i = 255; i > 0; i--) {
+                    const j = Math.floor(random() * (i + 1));
+                    [this.p[i], this.p[j]] = [this.p[j], this.p[i]];
+                }
+                for (let i = 0; i < 512; i++) {
+                    this.perm[i] = this.p[i & 255];
+                    this.permMod12[i] = this.perm[i] % 12;
+                }
+            }
+            
+            seededRandom(seed) {
+                return function() {
+                    seed = (seed * 9301 + 49297) % 233280;
+                    return seed / 233280;
+                };
+            }
+            
+            grad3 = [
+                [1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
+                [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
+                [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]
+            ];
+            
+            dot(g, x, y) {
+                return g[0] * x + g[1] * y;
+            }
+            
+            noise2D(xin, yin) {
+                const F2 = 0.5 * (Math.sqrt(3) - 1);
+                const G2 = (3 - Math.sqrt(3)) / 6;
+                
+                let n0, n1, n2;
+                const s = (xin + yin) * F2;
+                const i = Math.floor(xin + s);
+                const j = Math.floor(yin + s);
+                const t = (i + j) * G2;
+                const X0 = i - t;
+                const Y0 = j - t;
+                const x0 = xin - X0;
+                const y0 = yin - Y0;
+                
+                let i1, j1;
+                if (x0 > y0) { i1 = 1; j1 = 0; }
+                else { i1 = 0; j1 = 1; }
+                
+                const x1 = x0 - i1 + G2;
+                const y1 = y0 - j1 + G2;
+                const x2 = x0 - 1 + 2 * G2;
+                const y2 = y0 - 1 + 2 * G2;
+                
+                const ii = i & 255;
+                const jj = j & 255;
+                const gi0 = this.permMod12[ii + this.perm[jj]];
+                const gi1 = this.permMod12[ii + i1 + this.perm[jj + j1]];
+                const gi2 = this.permMod12[ii + 1 + this.perm[jj + 1]];
+                
+                let t0 = 0.5 - x0 * x0 - y0 * y0;
+                if (t0 < 0) n0 = 0;
+                else {
+                    t0 *= t0;
+                    n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0);
+                }
+                
+                let t1 = 0.5 - x1 * x1 - y1 * y1;
+                if (t1 < 0) n1 = 0;
+                else {
+                    t1 *= t1;
+                    n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1);
+                }
+                
+                let t2 = 0.5 - x2 * x2 - y2 * y2;
+                if (t2 < 0) n2 = 0;
+                else {
+                    t2 *= t2;
+                    n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2);
+                }
+                
+                return 70 * (n0 + n1 + n2);
+            }
+            
+            octaveNoise2D(x, y, octaves, persistence = 0.5) {
+                let total = 0;
+                let frequency = 1;
+                let amplitude = 1;
+                let maxValue = 0;
+                
+                for (let i = 0; i < octaves; i++) {
+                    total += this.noise2D(x * frequency, y * frequency) * amplitude;
+                    maxValue += amplitude;
+                    amplitude *= persistence;
+                    frequency *= 2;
+                }
+                
+                return total / maxValue;
+            }
+        }
+        
+        let currentTab = 'flow';
+        let noise;
+        let svgContent = '';
+
+        // Depth Topo specific state
+        let depthTopoImageData = null;
+        let depthTopoImage = null;
+        let depthMapData = null;
+
+        // Undo state
+        let undoState = null;
+
+        function captureState() {
+            const state = {
+                tab: currentTab,
+                svgContent: svgContent,
+                params: {}
+            };
+
+            // Capture all input values for the current tab
+            const controls = document.getElementById(`${currentTab}-controls`);
+            if (controls) {
+                const inputs = controls.querySelectorAll('input[type="range"], input[type="color"], input[type="checkbox"]');
+                inputs.forEach(input => {
+                    if (input.type === 'checkbox') {
+                        state.params[input.id] = input.checked;
+                    } else {
+                        state.params[input.id] = input.value;
+                    }
+                });
+            }
+
+            // Also capture global style controls
+            state.params['strokeColor'] = document.getElementById('strokeColor').value;
+            state.params['bgColor'] = document.getElementById('bgColor').value;
+            state.params['canvasSize'] = document.getElementById('canvasSize').value;
+
+            return state;
+        }
+
+        function undo() {
+            if (!undoState) return;
+
+            isUndoing = true;
+
+            // Restore parameters
+            for (const [id, value] of Object.entries(undoState.params)) {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.type === 'checkbox') {
+                        el.checked = value;
+                    } else {
+                        el.value = value;
+                    }
+                }
+            }
+
+            // Restore SVG content
+            svgContent = undoState.svgContent;
+
+            // Regenerate to update canvas
+            regenerate();
+
+            // Clear undo state after using it
+            undoState = null;
+            isUndoing = false;
+        }
+
+        // Keyboard shortcut for undo
+        document.addEventListener('keydown', function(e) {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+        });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.pattern-controls').forEach(c => c.classList.remove('active'));
+
+            const tabNames = ['flow', 'wave', 'topo', 'dots', 'net', 'voronoi', 'hatch', 'depthtopo'];
+            document.querySelector(`.tab:nth-child(${tabNames.indexOf(tab) + 1})`).classList.add('active');
+            document.getElementById(`${tab}-controls`).classList.add('active');
+
+            // Toggle between single and triple canvas view
+            const singleView = document.getElementById('canvas-container');
+            const tripleView = document.getElementById('depthtopo-canvas-container');
+
+            if (tab === 'depthtopo') {
+                singleView.style.display = 'none';
+                tripleView.classList.add('active');
+            } else {
+                singleView.style.display = 'flex';
+                tripleView.classList.remove('active');
+            }
+
+            regenerate();
+        }
+
+        let isUndoing = false;
+
+        function regenerate() {
+            // Capture state before regenerating (for undo), but not while undoing
+            if (!isUndoing && svgContent) {
+                undoState = captureState();
+            }
+
+            document.getElementById('canvasSize-val').textContent = document.getElementById('canvasSize').value;
+
+            switch(currentTab) {
+                case 'flow': generateFlow(); break;
+                case 'wave': generateWave(); break;
+                case 'topo': generateTopo(); break;
+                case 'dots': generateDots(); break;
+                case 'net': generateNet(); break;
+                case 'voronoi': generateVoronoi(); break;
+                case 'hatch': generateHatch(); break;
+                case 'depthtopo': generateDepthTopo(); break;
+            }
+        }
+        
+        // FLOW FIELD
+        const flowPresets = {
+            calm: { particles: 600, length: 120, scale: 0.003, octaves: 1, curve: 1.5, stroke: 0.5, opacity: 0.3 },
+            turbulent: { particles: 1500, length: 60, scale: 0.012, octaves: 4, curve: 4, stroke: 0.5, opacity: 0.25 },
+            streams: { particles: 400, length: 200, scale: 0.004, octaves: 2, curve: 2, stroke: 0.75, opacity: 0.5 },
+            vortex: { particles: 1000, length: 100, scale: 0.008, octaves: 3, curve: 6, stroke: 0.5, opacity: 0.35 },
+            silk: { particles: 2000, length: 150, scale: 0.002, octaves: 1, curve: 1, stroke: 0.25, opacity: 0.2 }
+        };
+        
+        function applyFlowPreset(name) {
+            const p = flowPresets[name];
+            document.getElementById('flow-particles').value = p.particles;
+            document.getElementById('flow-length').value = p.length;
+            document.getElementById('flow-scale').value = p.scale;
+            document.getElementById('flow-octaves').value = p.octaves;
+            document.getElementById('flow-curve').value = p.curve;
+            document.getElementById('flow-stroke').value = p.stroke;
+            document.getElementById('flow-opacity').value = p.opacity;
+            generateFlow();
+        }
+        
+        function generateFlow() {
+            const particles = parseInt(document.getElementById('flow-particles').value);
+            const length = parseInt(document.getElementById('flow-length').value);
+            const scale = parseFloat(document.getElementById('flow-scale').value);
+            const octaves = parseInt(document.getElementById('flow-octaves').value);
+            const curve = parseFloat(document.getElementById('flow-curve').value);
+            const strokeWidth = parseFloat(document.getElementById('flow-stroke').value);
+            const opacity = parseFloat(document.getElementById('flow-opacity').value);
+            const seed = parseInt(document.getElementById('flow-seed').value);
+            const size = parseInt(document.getElementById('canvasSize').value);
+            const strokeColor = document.getElementById('strokeColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+            
+            // Update displays
+            document.getElementById('flow-particles-val').textContent = particles;
+            document.getElementById('flow-length-val').textContent = length;
+            document.getElementById('flow-scale-val').textContent = scale;
+            document.getElementById('flow-octaves-val').textContent = octaves;
+            document.getElementById('flow-curve-val').textContent = curve;
+            document.getElementById('flow-stroke-val').textContent = strokeWidth;
+            document.getElementById('flow-opacity-val').textContent = opacity;
+            document.getElementById('flow-seed-val').textContent = seed;
+            
+            noise = new SimplexNoise(seed);
+            
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+            
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.globalAlpha = opacity;
+            ctx.lineCap = 'round';
+            
+            let paths = [];
+            
+            const random = new SimplexNoise(seed + 1).seededRandom(seed);
+            
+            for (let i = 0; i < particles; i++) {
+                let x = random() * size;
+                let y = random() * size;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                
+                let pathData = `M${x.toFixed(2)},${y.toFixed(2)}`;
+                
+                for (let j = 0; j < length; j++) {
+                    const angle = noise.octaveNoise2D(x * scale, y * scale, octaves) * Math.PI * curve;
+                    x += Math.cos(angle);
+                    y += Math.sin(angle);
+                    
+                    if (x < 0 || x > size || y < 0 || y > size) break;
+                    
+                    ctx.lineTo(x, y);
+                    pathData += `L${x.toFixed(2)},${y.toFixed(2)}`;
+                }
+                
+                ctx.stroke();
+                paths.push(pathData);
+            }
+            
+            ctx.globalAlpha = 1;
+            
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <rect width="${size}" height="${size}" fill="${bgColor}"/>
+                ${paths.map(d => `<path d="${d}" fill="none" stroke="${strokeColor}" stroke-width="${strokeWidth}" opacity="${opacity}" stroke-linecap="round"/>`).join('\n')}
+            </svg>`;
+            
+            document.getElementById('canvas-container').style.background = bgColor;
+        }
+        
+        // WAVE INTERFERENCE
+        const wavePresets = {
+            ripple: { sources: 1, frequency: 30, lines: 60, amplitude: 8, decay: 0.002, stroke: 0.5, opacity: 0.7 },
+            interference: { sources: 2, frequency: 25, lines: 80, amplitude: 10, decay: 0.003, stroke: 0.5, opacity: 0.6 },
+            dense: { sources: 3, frequency: 50, lines: 150, amplitude: 5, decay: 0.004, stroke: 0.25, opacity: 0.4 },
+            sparse: { sources: 2, frequency: 15, lines: 40, amplitude: 15, decay: 0.002, stroke: 1, opacity: 0.8 },
+            chaos: { sources: 5, frequency: 35, lines: 100, amplitude: 12, decay: 0.005, stroke: 0.5, opacity: 0.5 }
+        };
+        
+        function applyWavePreset(name) {
+            const p = wavePresets[name];
+            document.getElementById('wave-sources').value = p.sources;
+            document.getElementById('wave-frequency').value = p.frequency;
+            document.getElementById('wave-lines').value = p.lines;
+            document.getElementById('wave-amplitude').value = p.amplitude;
+            document.getElementById('wave-decay').value = p.decay;
+            document.getElementById('wave-stroke').value = p.stroke;
+            document.getElementById('wave-opacity').value = p.opacity;
+            generateWave();
+        }
+        
+        function generateWave() {
+            const numSources = parseInt(document.getElementById('wave-sources').value);
+            const frequency = parseInt(document.getElementById('wave-frequency').value);
+            const numLines = parseInt(document.getElementById('wave-lines').value);
+            const amplitude = parseInt(document.getElementById('wave-amplitude').value);
+            const decay = parseFloat(document.getElementById('wave-decay').value);
+            const strokeWidth = parseFloat(document.getElementById('wave-stroke').value);
+            const opacity = parseFloat(document.getElementById('wave-opacity').value);
+            const seed = parseInt(document.getElementById('wave-seed').value);
+            const size = parseInt(document.getElementById('canvasSize').value);
+            const strokeColor = document.getElementById('strokeColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+            
+            // Update displays
+            document.getElementById('wave-sources-val').textContent = numSources;
+            document.getElementById('wave-frequency-val').textContent = frequency;
+            document.getElementById('wave-lines-val').textContent = numLines;
+            document.getElementById('wave-amplitude-val').textContent = amplitude;
+            document.getElementById('wave-decay-val').textContent = decay;
+            document.getElementById('wave-stroke-val').textContent = strokeWidth;
+            document.getElementById('wave-opacity-val').textContent = opacity;
+            document.getElementById('wave-seed-val').textContent = seed;
+            
+            const random = new SimplexNoise(seed).seededRandom(seed);
+            
+            // Generate source positions
+            const sources = [];
+            for (let i = 0; i < numSources; i++) {
+                sources.push({
+                    x: random() * size,
+                    y: random() * size
+                });
+            }
+            
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+            
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.globalAlpha = opacity;
+            
+            let paths = [];
+            const spacing = size / numLines;
+            
+            for (let i = 0; i < numLines; i++) {
+                const baseY = i * spacing;
+                let pathData = '';
+                
+                ctx.beginPath();
+                
+                for (let x = 0; x <= size; x += 2) {
+                    let totalDisplacement = 0;
+                    
+                    for (const source of sources) {
+                        const dx = x - source.x;
+                        const dy = baseY - source.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const wave = Math.sin(dist * decay * frequency) * amplitude * Math.exp(-dist * decay * 0.5);
+                        totalDisplacement += wave;
+                    }
+                    
+                    const y = baseY + totalDisplacement;
+                    
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                        pathData = `M${x.toFixed(2)},${y.toFixed(2)}`;
+                    } else {
+                        ctx.lineTo(x, y);
+                        pathData += `L${x.toFixed(2)},${y.toFixed(2)}`;
+                    }
+                }
+                
+                ctx.stroke();
+                paths.push(pathData);
+            }
+            
+            ctx.globalAlpha = 1;
+            
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <rect width="${size}" height="${size}" fill="${bgColor}"/>
+                ${paths.map(d => `<path d="${d}" fill="none" stroke="${strokeColor}" stroke-width="${strokeWidth}" opacity="${opacity}"/>`).join('\n')}
+            </svg>`;
+            
+            document.getElementById('canvas-container').style.background = bgColor;
+        }
+        
+        // TOPOGRAPHIC
+        const topoPresets = {
+            organic: { levels: 10, scale: 0.003, octaves: 2, smooth: 6, warp: 50, stroke: 1.5, opacity: 0.8 },
+            terrain: { levels: 20, scale: 0.006, octaves: 3, smooth: 2, warp: 0, stroke: 0.75, opacity: 0.5 },
+            fine: { levels: 40, scale: 0.008, octaves: 4, smooth: 2, warp: 20, stroke: 0.35, opacity: 0.4 },
+            bold: { levels: 12, scale: 0.004, octaves: 2, smooth: 4, warp: 30, stroke: 2, opacity: 0.9 }
+        };
+
+        function applyTopoPreset(name) {
+            const p = topoPresets[name];
+            document.getElementById('topo-levels').value = p.levels;
+            document.getElementById('topo-scale').value = p.scale;
+            document.getElementById('topo-octaves').value = p.octaves;
+            document.getElementById('topo-smooth').value = p.smooth;
+            document.getElementById('topo-warp').value = p.warp;
+            document.getElementById('topo-stroke').value = p.stroke;
+            document.getElementById('topo-opacity').value = p.opacity;
+            generateTopo();
+        }
+
+        function generateTopo() {
+            const levels = parseInt(document.getElementById('topo-levels').value);
+            const scale = parseFloat(document.getElementById('topo-scale').value);
+            const octaves = parseInt(document.getElementById('topo-octaves').value);
+            const smoothIterations = parseInt(document.getElementById('topo-smooth').value);
+            const warpAmount = parseFloat(document.getElementById('topo-warp').value);
+            const strokeWidth = parseFloat(document.getElementById('topo-stroke').value);
+            const opacity = parseFloat(document.getElementById('topo-opacity').value);
+            const seed = parseInt(document.getElementById('topo-seed').value);
+            const size = parseInt(document.getElementById('canvasSize').value);
+            const strokeColor = document.getElementById('strokeColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+
+            // Update displays
+            document.getElementById('topo-levels-val').textContent = levels;
+            document.getElementById('topo-scale-val').textContent = scale;
+            document.getElementById('topo-octaves-val').textContent = octaves;
+            document.getElementById('topo-smooth-val').textContent = smoothIterations;
+            document.getElementById('topo-warp-val').textContent = warpAmount;
+            document.getElementById('topo-stroke-val').textContent = strokeWidth;
+            document.getElementById('topo-opacity-val').textContent = opacity;
+            document.getElementById('topo-seed-val').textContent = seed;
+
+            noise = new SimplexNoise(seed);
+
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+
+            // Generate height map with domain warping for more "holes"
+            const resolution = 2;
+            const cols = Math.ceil(size / resolution);
+            const rows = Math.ceil(size / resolution);
+            const heightMap = [];
+            const warpScale = warpAmount / 100; // 0 to 1
+
+            for (let y = 0; y < rows; y++) {
+                heightMap[y] = [];
+                for (let x = 0; x < cols; x++) {
+                    const px = x * resolution * scale;
+                    const py = y * resolution * scale;
+
+                    if (warpScale > 0) {
+                        // Domain warping: use noise to offset coordinates
+                        const warpX = noise.noise2D(px * 2, py * 2) * warpScale * 50;
+                        const warpY = noise.noise2D(px * 2 + 100, py * 2 + 100) * warpScale * 50;
+                        heightMap[y][x] = (noise.octaveNoise2D(px + warpX, py + warpY, octaves) + 1) / 2;
+                    } else {
+                        heightMap[y][x] = (noise.octaveNoise2D(px, py, octaves) + 1) / 2;
+                    }
+                }
+            }
+
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.globalAlpha = opacity;
+
+            let allConnectedPaths = [];
+
+            // Marching squares for contour lines - collect edges per level
+            for (let level = 0; level < levels; level++) {
+                const threshold = level / levels;
+                const levelEdges = [];
+
+                for (let y = 0; y < rows - 1; y++) {
+                    for (let x = 0; x < cols - 1; x++) {
+                        const tl = heightMap[y][x] > threshold ? 1 : 0;
+                        const tr = heightMap[y][x + 1] > threshold ? 1 : 0;
+                        const br = heightMap[y + 1][x + 1] > threshold ? 1 : 0;
+                        const bl = heightMap[y + 1][x] > threshold ? 1 : 0;
+
+                        const state = tl * 8 + tr * 4 + br * 2 + bl;
+
+                        const px = x * resolution;
+                        const py = y * resolution;
+
+                        const lines = getContourLines(state, px, py, resolution);
+                        levelEdges.push(...lines);
+                    }
+                }
+
+                // Connect edges into continuous paths
+                const connectedPaths = connectTopoEdges(levelEdges);
+
+                // Smooth and simplify each path
+                for (const path of connectedPaths) {
+                    if (path.length < 2) continue;
+
+                    // Apply Chaikin smoothing
+                    let smoothed = path;
+                    for (let i = 0; i < smoothIterations; i++) {
+                        smoothed = chaikinSmooth(smoothed, false);
+                    }
+
+                    // Simplify - use higher tolerance for smoother curves
+                    const tolerance = smoothIterations > 4 ? 1.5 : 0.5;
+                    const simplified = simplifyPath(smoothed, tolerance);
+
+                    if (simplified.length >= 2) {
+                        allConnectedPaths.push(simplified);
+                    }
+                }
+            }
+
+            // Draw on canvas
+            for (const path of allConnectedPaths) {
+                ctx.beginPath();
+                ctx.moveTo(path[0].x, path[0].y);
+                for (let i = 1; i < path.length; i++) {
+                    ctx.lineTo(path[i].x, path[i].y);
+                }
+                ctx.stroke();
+            }
+
+            ctx.globalAlpha = 1;
+
+            // Generate SVG with connected paths
+            const svgPaths = allConnectedPaths.map(path => {
+                let d = `M${path[0].x.toFixed(1)},${path[0].y.toFixed(1)}`;
+                for (let i = 1; i < path.length; i++) {
+                    d += `L${path[i].x.toFixed(1)},${path[i].y.toFixed(1)}`;
+                }
+                return d;
+            });
+
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <rect width="${size}" height="${size}" fill="${bgColor}"/>
+                ${svgPaths.map(d => `<path d="${d}" fill="none" stroke="${strokeColor}" stroke-width="${strokeWidth}" opacity="${opacity}"/>`).join('\n')}
+            </svg>`;
+
+            document.getElementById('canvas-container').style.background = bgColor;
+        }
+
+        function connectTopoEdges(edges) {
+            if (edges.length === 0) return [];
+
+            const paths = [];
+            const used = new Set();
+            const pointMap = new Map();
+
+            // Build adjacency map with tolerance for floating point
+            const getKey = (x, y) => `${x.toFixed(1)},${y.toFixed(1)}`;
+
+            edges.forEach((e, i) => {
+                const k1 = getKey(e.x1, e.y1);
+                const k2 = getKey(e.x2, e.y2);
+                if (!pointMap.has(k1)) pointMap.set(k1, []);
+                if (!pointMap.has(k2)) pointMap.set(k2, []);
+                pointMap.get(k1).push({ idx: i, other: k2, x: e.x2, y: e.y2 });
+                pointMap.get(k2).push({ idx: i, other: k1, x: e.x1, y: e.y1 });
+            });
+
+            // Trace paths starting from endpoints (degree 1 nodes)
+            for (let i = 0; i < edges.length; i++) {
+                if (used.has(i)) continue;
+
+                const path = [{ x: edges[i].x1, y: edges[i].y1 }, { x: edges[i].x2, y: edges[i].y2 }];
+                used.add(i);
+
+                // Extend forward
+                let currentKey = getKey(edges[i].x2, edges[i].y2);
+                while (true) {
+                    const neighbors = pointMap.get(currentKey) || [];
+                    const next = neighbors.find(n => !used.has(n.idx));
+                    if (!next) break;
+                    used.add(next.idx);
+                    path.push({ x: next.x, y: next.y });
+                    currentKey = next.other;
+                }
+
+                // Extend backward
+                currentKey = getKey(edges[i].x1, edges[i].y1);
+                while (true) {
+                    const neighbors = pointMap.get(currentKey) || [];
+                    const next = neighbors.find(n => !used.has(n.idx));
+                    if (!next) break;
+                    used.add(next.idx);
+                    path.unshift({ x: next.x, y: next.y });
+                    currentKey = next.other;
+                }
+
+                if (path.length >= 2) paths.push(path);
+            }
+
+            return paths;
+        }
+        
+        function getContourLines(state, x, y, res) {
+            const lines = [];
+            const half = res / 2;
+            
+            const top = { x: x + half, y: y };
+            const right = { x: x + res, y: y + half };
+            const bottom = { x: x + half, y: y + res };
+            const left = { x: x, y: y + half };
+            
+            switch(state) {
+                case 1: case 14: lines.push({ x1: left.x, y1: left.y, x2: bottom.x, y2: bottom.y }); break;
+                case 2: case 13: lines.push({ x1: bottom.x, y1: bottom.y, x2: right.x, y2: right.y }); break;
+                case 3: case 12: lines.push({ x1: left.x, y1: left.y, x2: right.x, y2: right.y }); break;
+                case 4: case 11: lines.push({ x1: top.x, y1: top.y, x2: right.x, y2: right.y }); break;
+                case 5:
+                    lines.push({ x1: left.x, y1: left.y, x2: top.x, y2: top.y });
+                    lines.push({ x1: bottom.x, y1: bottom.y, x2: right.x, y2: right.y });
+                    break;
+                case 6: case 9: lines.push({ x1: top.x, y1: top.y, x2: bottom.x, y2: bottom.y }); break;
+                case 7: case 8: lines.push({ x1: left.x, y1: left.y, x2: top.x, y2: top.y }); break;
+                case 10:
+                    lines.push({ x1: top.x, y1: top.y, x2: right.x, y2: right.y });
+                    lines.push({ x1: left.x, y1: left.y, x2: bottom.x, y2: bottom.y });
+                    break;
+            }
+            
+            return lines;
+        }
+        
+        // DOT MATRIX
+        const dotsPresets = {
+            halftone: { grid: 25, maxsize: 10, minsize: 0.5, scale: 0.008, opacity: 0.7 },
+            fine: { grid: 50, maxsize: 4, minsize: 0.25, scale: 0.006, opacity: 0.6 },
+            coarse: { grid: 15, maxsize: 15, minsize: 1, scale: 0.005, opacity: 0.8 },
+            gradient: { grid: 30, maxsize: 8, minsize: 0, scale: 0.003, opacity: 0.75 }
+        };
+        
+        function applyDotsPreset(name) {
+            const p = dotsPresets[name];
+            document.getElementById('dots-grid').value = p.grid;
+            document.getElementById('dots-maxsize').value = p.maxsize;
+            document.getElementById('dots-minsize').value = p.minsize;
+            document.getElementById('dots-scale').value = p.scale;
+            document.getElementById('dots-opacity').value = p.opacity;
+            generateDots();
+        }
+        
+        function generateDots() {
+            const gridSize = parseInt(document.getElementById('dots-grid').value);
+            const maxSize = parseFloat(document.getElementById('dots-maxsize').value);
+            const minSize = parseFloat(document.getElementById('dots-minsize').value);
+            const scale = parseFloat(document.getElementById('dots-scale').value);
+            const opacity = parseFloat(document.getElementById('dots-opacity').value);
+            const seed = parseInt(document.getElementById('dots-seed').value);
+            const size = parseInt(document.getElementById('canvasSize').value);
+            const strokeColor = document.getElementById('strokeColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+            
+            // Update displays
+            document.getElementById('dots-grid-val').textContent = gridSize;
+            document.getElementById('dots-maxsize-val').textContent = maxSize;
+            document.getElementById('dots-minsize-val').textContent = minSize;
+            document.getElementById('dots-scale-val').textContent = scale;
+            document.getElementById('dots-opacity-val').textContent = opacity;
+            document.getElementById('dots-seed-val').textContent = seed;
+            
+            noise = new SimplexNoise(seed);
+            
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+            
+            ctx.fillStyle = strokeColor;
+            ctx.globalAlpha = opacity;
+            
+            let circles = [];
+            const spacing = size / gridSize;
+            
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const px = (x + 0.5) * spacing;
+                    const py = (y + 0.5) * spacing;
+                    
+                    const noiseVal = (noise.noise2D(px * scale, py * scale) + 1) / 2;
+                    const radius = minSize + noiseVal * (maxSize - minSize);
+                    
+                    if (radius > 0.1) {
+                        ctx.beginPath();
+                        ctx.arc(px, py, radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        circles.push({ cx: px.toFixed(2), cy: py.toFixed(2), r: radius.toFixed(2) });
+                    }
+                }
+            }
+            
+            ctx.globalAlpha = 1;
+            
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <rect width="${size}" height="${size}" fill="${bgColor}"/>
+                ${circles.map(c => `<circle cx="${c.cx}" cy="${c.cy}" r="${c.r}" fill="${strokeColor}" opacity="${opacity}"/>`).join('\n')}
+            </svg>`;
+            
+            document.getElementById('canvas-container').style.background = bgColor;
+        }
+        
+        // NETWORK
+        const netPresets = {
+            sparse: { nodes: 50, distance: 100, nodesize: 3, linewidth: 0.5, opacity: 0.6 },
+            dense: { nodes: 200, distance: 60, nodesize: 2, linewidth: 0.35, opacity: 0.4 },
+            clustered: { nodes: 120, distance: 80, nodesize: 2.5, linewidth: 0.5, opacity: 0.5 },
+            web: { nodes: 80, distance: 120, nodesize: 1.5, linewidth: 0.75, opacity: 0.55 }
+        };
+        
+        function applyNetPreset(name) {
+            const p = netPresets[name];
+            document.getElementById('net-nodes').value = p.nodes;
+            document.getElementById('net-distance').value = p.distance;
+            document.getElementById('net-nodesize').value = p.nodesize;
+            document.getElementById('net-linewidth').value = p.linewidth;
+            document.getElementById('net-opacity').value = p.opacity;
+            generateNet();
+        }
+        
+        function generateNet() {
+            const numNodes = parseInt(document.getElementById('net-nodes').value);
+            const maxDistance = parseInt(document.getElementById('net-distance').value);
+            const nodeSize = parseFloat(document.getElementById('net-nodesize').value);
+            const lineWidth = parseFloat(document.getElementById('net-linewidth').value);
+            const opacity = parseFloat(document.getElementById('net-opacity').value);
+            const seed = parseInt(document.getElementById('net-seed').value);
+            const size = parseInt(document.getElementById('canvasSize').value);
+            const strokeColor = document.getElementById('strokeColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+            
+            // Update displays
+            document.getElementById('net-nodes-val').textContent = numNodes;
+            document.getElementById('net-distance-val').textContent = maxDistance;
+            document.getElementById('net-nodesize-val').textContent = nodeSize;
+            document.getElementById('net-linewidth-val').textContent = lineWidth;
+            document.getElementById('net-opacity-val').textContent = opacity;
+            document.getElementById('net-seed-val').textContent = seed;
+            
+            const random = new SimplexNoise(seed).seededRandom(seed);
+            
+            // Generate nodes
+            const nodes = [];
+            for (let i = 0; i < numNodes; i++) {
+                nodes.push({
+                    x: random() * size,
+                    y: random() * size
+                });
+            }
+            
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+            
+            ctx.strokeStyle = strokeColor;
+            ctx.fillStyle = strokeColor;
+            ctx.lineWidth = lineWidth;
+            ctx.globalAlpha = opacity;
+            
+            let lines = [];
+            let circles = [];
+            
+            // Draw connections
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < maxDistance) {
+                        const lineOpacity = (1 - dist / maxDistance) * opacity;
+                        ctx.globalAlpha = lineOpacity;
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.stroke();
+                        lines.push({
+                            x1: nodes[i].x.toFixed(2),
+                            y1: nodes[i].y.toFixed(2),
+                            x2: nodes[j].x.toFixed(2),
+                            y2: nodes[j].y.toFixed(2),
+                            opacity: lineOpacity.toFixed(3)
+                        });
+                    }
+                }
+            }
+            
+            // Draw nodes
+            ctx.globalAlpha = opacity;
+            for (const node of nodes) {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, nodeSize, 0, Math.PI * 2);
+                ctx.fill();
+                circles.push({ cx: node.x.toFixed(2), cy: node.y.toFixed(2), r: nodeSize });
+            }
+            
+            ctx.globalAlpha = 1;
+            
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <rect width="${size}" height="${size}" fill="${bgColor}"/>
+                ${lines.map(l => `<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}" stroke="${strokeColor}" stroke-width="${lineWidth}" opacity="${l.opacity}"/>`).join('\n')}
+                ${circles.map(c => `<circle cx="${c.cx}" cy="${c.cy}" r="${c.r}" fill="${strokeColor}" opacity="${opacity}"/>`).join('\n')}
+            </svg>`;
+            
+            document.getElementById('canvas-container').style.background = bgColor;
+        }
+
+        // VORONOI
+        const voronoiPresets = {
+            cells: { cells: 80, gap: 4, radius: 3, relax: 1 },
+            giraffe: { cells: 40, gap: 12, radius: 8, relax: 3 },
+            organic: { cells: 60, gap: 8, radius: 5, relax: 2 },
+            foam: { cells: 150, gap: 3, radius: 2, relax: 0 }
+        };
+
+        function applyVoronoiPreset(name) {
+            const p = voronoiPresets[name];
+            document.getElementById('voronoi-cells').value = p.cells;
+            document.getElementById('voronoi-gap').value = p.gap;
+            document.getElementById('voronoi-radius').value = p.radius;
+            document.getElementById('voronoi-relax').value = p.relax;
+            generateVoronoi();
+        }
+
+        function generateVoronoi() {
+            const numCells = parseInt(document.getElementById('voronoi-cells').value);
+            const gapSize = parseFloat(document.getElementById('voronoi-gap').value);
+            const cornerRadius = parseFloat(document.getElementById('voronoi-radius').value);
+            const relaxIterations = parseInt(document.getElementById('voronoi-relax').value);
+            const seed = parseInt(document.getElementById('voronoi-seed').value);
+            const size = parseInt(document.getElementById('canvasSize').value);
+            const fillColor = document.getElementById('strokeColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+
+            // Update displays
+            document.getElementById('voronoi-cells-val').textContent = numCells;
+            document.getElementById('voronoi-gap-val').textContent = gapSize;
+            document.getElementById('voronoi-radius-val').textContent = cornerRadius;
+            document.getElementById('voronoi-relax-val').textContent = relaxIterations;
+            document.getElementById('voronoi-seed-val').textContent = seed;
+
+            const random = new SimplexNoise(seed).seededRandom(seed);
+
+            // Generate seed points
+            let points = [];
+            for (let i = 0; i < numCells; i++) {
+                points.push({
+                    x: random() * size,
+                    y: random() * size
+                });
+            }
+
+            // Lloyd relaxation for more even distribution
+            for (let iter = 0; iter < relaxIterations; iter++) {
+                points = lloydRelax(points, size);
+            }
+
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+
+            // Create distance map: for each pixel, store distance to nearest and second nearest
+            const gapThreshold = gapSize * gapSize * 4; // squared distance threshold
+            const cellMask = new Uint8Array(size * size); // 1 = inside cell, 0 = gap
+            const cellOwner = new Int16Array(size * size); // which cell owns each pixel
+
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    let minDist = Infinity;
+                    let secondDist = Infinity;
+                    let nearest = 0;
+
+                    for (let i = 0; i < points.length; i++) {
+                        const dx = x - points[i].x;
+                        const dy = y - points[i].y;
+                        const dist = dx * dx + dy * dy;
+                        if (dist < minDist) {
+                            secondDist = minDist;
+                            minDist = dist;
+                            nearest = i;
+                        } else if (dist < secondDist) {
+                            secondDist = dist;
+                        }
+                    }
+
+                    const idx = y * size + x;
+                    cellOwner[idx] = nearest;
+                    // Pixel is inside cell if difference to second nearest is large enough
+                    cellMask[idx] = (secondDist - minDist > gapThreshold) ? 1 : 0;
+                }
+            }
+
+            // Apply corner rounding by eroding then dilating (morphological opening)
+            let processedMask = cellMask;
+            if (cornerRadius > 0) {
+                processedMask = applyMorphologicalSmoothing(cellMask, size, cornerRadius);
+            }
+
+            // Draw cells on canvas
+            const imageData = ctx.getImageData(0, 0, size, size);
+            const data = imageData.data;
+            const fillR = parseInt(fillColor.slice(1, 3), 16);
+            const fillG = parseInt(fillColor.slice(3, 5), 16);
+            const fillB = parseInt(fillColor.slice(5, 7), 16);
+
+            for (let i = 0; i < size * size; i++) {
+                if (processedMask[i]) {
+                    const idx = i * 4;
+                    data[idx] = fillR;
+                    data[idx + 1] = fillG;
+                    data[idx + 2] = fillB;
+                    data[idx + 3] = 255;
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+
+            // Generate SVG using contour tracing for each cell
+            const cellPaths = extractCellContours(processedMask, cellOwner, size, numCells);
+
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <rect width="${size}" height="${size}" fill="${bgColor}"/>
+                ${cellPaths.map(d => `<path d="${d}" fill="${fillColor}" stroke="none"/>`).join('\n')}
+            </svg>`;
+
+            document.getElementById('canvas-container').style.background = bgColor;
+        }
+
+        function applyMorphologicalSmoothing(mask, size, radius) {
+            const r = Math.ceil(radius);
+            const result = new Uint8Array(size * size);
+
+            // Erosion pass
+            const eroded = new Uint8Array(size * size);
+            for (let y = r; y < size - r; y++) {
+                for (let x = r; x < size - r; x++) {
+                    let allSet = true;
+                    outer: for (let dy = -r; dy <= r && allSet; dy++) {
+                        for (let dx = -r; dx <= r && allSet; dx++) {
+                            if (dx * dx + dy * dy <= r * r) {
+                                if (!mask[(y + dy) * size + (x + dx)]) {
+                                    allSet = false;
+                                }
+                            }
+                        }
+                    }
+                    eroded[y * size + x] = allSet ? 1 : 0;
+                }
+            }
+
+            // Dilation pass
+            for (let y = r; y < size - r; y++) {
+                for (let x = r; x < size - r; x++) {
+                    let anySet = false;
+                    outer: for (let dy = -r; dy <= r && !anySet; dy++) {
+                        for (let dx = -r; dx <= r && !anySet; dx++) {
+                            if (dx * dx + dy * dy <= r * r) {
+                                if (eroded[(y + dy) * size + (x + dx)]) {
+                                    anySet = true;
+                                }
+                            }
+                        }
+                    }
+                    result[y * size + x] = anySet ? 1 : 0;
+                }
+            }
+
+            return result;
+        }
+
+        function extractCellContours(mask, cellOwner, size, numCells) {
+            // Use marching squares to extract contours, simplified
+            const paths = [];
+            const step = 2; // Sample every 2 pixels for lighter SVG
+            const gridW = Math.floor(size / step);
+            const gridH = Math.floor(size / step);
+
+            // Create simplified grid
+            const grid = new Uint8Array(gridW * gridH);
+            for (let gy = 0; gy < gridH; gy++) {
+                for (let gx = 0; gx < gridW; gx++) {
+                    const x = gx * step;
+                    const y = gy * step;
+                    grid[gy * gridW + gx] = mask[y * size + x];
+                }
+            }
+
+            // Find contour edges
+            const edges = [];
+            for (let gy = 0; gy < gridH - 1; gy++) {
+                for (let gx = 0; gx < gridW - 1; gx++) {
+                    const idx = gy * gridW + gx;
+                    const tl = grid[idx];
+                    const tr = grid[idx + 1];
+                    const bl = grid[idx + gridW];
+                    const br = grid[idx + gridW + 1];
+
+                    const config = (tl << 3) | (tr << 2) | (br << 1) | bl;
+
+                    const x = gx * step;
+                    const y = gy * step;
+                    const half = step / 2;
+
+                    // Marching squares cases
+                    switch (config) {
+                        case 1: case 14:
+                            edges.push({ x1: x, y1: y + half, x2: x + half, y2: y + step });
+                            break;
+                        case 2: case 13:
+                            edges.push({ x1: x + half, y1: y + step, x2: x + step, y2: y + half });
+                            break;
+                        case 3: case 12:
+                            edges.push({ x1: x, y1: y + half, x2: x + step, y2: y + half });
+                            break;
+                        case 4: case 11:
+                            edges.push({ x1: x + half, y1: y, x2: x + step, y2: y + half });
+                            break;
+                        case 5:
+                            edges.push({ x1: x, y1: y + half, x2: x + half, y2: y });
+                            edges.push({ x1: x + half, y1: y + step, x2: x + step, y2: y + half });
+                            break;
+                        case 6: case 9:
+                            edges.push({ x1: x + half, y1: y, x2: x + half, y2: y + step });
+                            break;
+                        case 7: case 8:
+                            edges.push({ x1: x, y1: y + half, x2: x + half, y2: y });
+                            break;
+                        case 10:
+                            edges.push({ x1: x + half, y1: y, x2: x + step, y2: y + half });
+                            edges.push({ x1: x, y1: y + half, x2: x + half, y2: y + step });
+                            break;
+                    }
+                }
+            }
+
+            // Connect edges into paths
+            const connectedPaths = connectEdgesToPaths(edges);
+
+            // Smooth and simplify paths, then convert to SVG
+            return connectedPaths.map(path => {
+                if (path.length < 3) return '';
+
+                // Apply Chaikin smoothing (3 iterations for nice curves)
+                let smoothed = path;
+                for (let i = 0; i < 3; i++) {
+                    smoothed = chaikinSmooth(smoothed, true);
+                }
+
+                // Simplify to reduce point count while keeping smoothness
+                const simplified = simplifyPath(smoothed, 1.0);
+
+                if (simplified.length < 3) return '';
+
+                let d = `M${simplified[0].x.toFixed(1)},${simplified[0].y.toFixed(1)}`;
+                for (let i = 1; i < simplified.length; i++) {
+                    d += `L${simplified[i].x.toFixed(1)},${simplified[i].y.toFixed(1)}`;
+                }
+                d += 'Z';
+                return d;
+            }).filter(d => d.length > 0);
+        }
+
+        function chaikinSmooth(points, closed) {
+            if (points.length < 3) return points;
+
+            const result = [];
+            const len = closed ? points.length : points.length - 1;
+
+            for (let i = 0; i < len; i++) {
+                const p0 = points[i];
+                const p1 = points[(i + 1) % points.length];
+
+                // Q = 3/4 * P0 + 1/4 * P1
+                result.push({
+                    x: 0.75 * p0.x + 0.25 * p1.x,
+                    y: 0.75 * p0.y + 0.25 * p1.y
+                });
+
+                // R = 1/4 * P0 + 3/4 * P1
+                result.push({
+                    x: 0.25 * p0.x + 0.75 * p1.x,
+                    y: 0.25 * p0.y + 0.75 * p1.y
+                });
+            }
+
+            return result;
+        }
+
+        function simplifyPath(points, tolerance) {
+            if (points.length <= 2) return points;
+
+            // Ramer-Douglas-Peucker simplification
+            let maxDist = 0;
+            let maxIdx = 0;
+            const first = points[0];
+            const last = points[points.length - 1];
+
+            for (let i = 1; i < points.length - 1; i++) {
+                const dist = perpendicularDist(points[i], first, last);
+                if (dist > maxDist) {
+                    maxDist = dist;
+                    maxIdx = i;
+                }
+            }
+
+            if (maxDist > tolerance) {
+                const left = simplifyPath(points.slice(0, maxIdx + 1), tolerance);
+                const right = simplifyPath(points.slice(maxIdx), tolerance);
+                return left.slice(0, -1).concat(right);
+            }
+
+            return [first, last];
+        }
+
+        function perpendicularDist(point, lineStart, lineEnd) {
+            const dx = lineEnd.x - lineStart.x;
+            const dy = lineEnd.y - lineStart.y;
+            const lenSq = dx * dx + dy * dy;
+
+            if (lenSq === 0) {
+                return Math.sqrt((point.x - lineStart.x) ** 2 + (point.y - lineStart.y) ** 2);
+            }
+
+            const t = Math.max(0, Math.min(1, ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / lenSq));
+            const projX = lineStart.x + t * dx;
+            const projY = lineStart.y + t * dy;
+
+            return Math.sqrt((point.x - projX) ** 2 + (point.y - projY) ** 2);
+        }
+
+        function connectEdgesToPaths(edges) {
+            if (edges.length === 0) return [];
+
+            const paths = [];
+            const used = new Set();
+            const pointMap = new Map();
+
+            // Build adjacency map
+            edges.forEach((e, i) => {
+                const k1 = `${e.x1.toFixed(1)},${e.y1.toFixed(1)}`;
+                const k2 = `${e.x2.toFixed(1)},${e.y2.toFixed(1)}`;
+                if (!pointMap.has(k1)) pointMap.set(k1, []);
+                if (!pointMap.has(k2)) pointMap.set(k2, []);
+                pointMap.get(k1).push({ idx: i, other: k2, x: e.x2, y: e.y2 });
+                pointMap.get(k2).push({ idx: i, other: k1, x: e.x1, y: e.y1 });
+            });
+
+            // Trace paths
+            for (let i = 0; i < edges.length; i++) {
+                if (used.has(i)) continue;
+
+                const path = [{ x: edges[i].x1, y: edges[i].y1 }, { x: edges[i].x2, y: edges[i].y2 }];
+                used.add(i);
+
+                // Extend forward
+                let currentKey = `${edges[i].x2.toFixed(1)},${edges[i].y2.toFixed(1)}`;
+                while (true) {
+                    const neighbors = pointMap.get(currentKey) || [];
+                    const next = neighbors.find(n => !used.has(n.idx));
+                    if (!next) break;
+                    used.add(next.idx);
+                    path.push({ x: next.x, y: next.y });
+                    currentKey = next.other;
+                }
+
+                // Extend backward
+                currentKey = `${edges[i].x1.toFixed(1)},${edges[i].y1.toFixed(1)}`;
+                while (true) {
+                    const neighbors = pointMap.get(currentKey) || [];
+                    const next = neighbors.find(n => !used.has(n.idx));
+                    if (!next) break;
+                    used.add(next.idx);
+                    path.unshift({ x: next.x, y: next.y });
+                    currentKey = next.other;
+                }
+
+                if (path.length >= 3) paths.push(path);
+            }
+
+            return paths;
+        }
+
+        function lloydRelax(points, size) {
+            // Simple Lloyd relaxation - move each point to centroid of its cell
+            const numPoints = points.length;
+            const centroids = points.map(() => ({ x: 0, y: 0, count: 0 }));
+
+            // Sample grid points to approximate centroids
+            const step = Math.max(2, Math.floor(size / 100));
+            for (let y = 0; y < size; y += step) {
+                for (let x = 0; x < size; x += step) {
+                    let minDist = Infinity;
+                    let nearest = 0;
+                    for (let i = 0; i < numPoints; i++) {
+                        const dx = x - points[i].x;
+                        const dy = y - points[i].y;
+                        const dist = dx * dx + dy * dy;
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearest = i;
+                        }
+                    }
+                    centroids[nearest].x += x;
+                    centroids[nearest].y += y;
+                    centroids[nearest].count++;
+                }
+            }
+
+            // Move points toward centroids
+            return points.map((p, i) => {
+                if (centroids[i].count > 0) {
+                    return {
+                        x: centroids[i].x / centroids[i].count,
+                        y: centroids[i].y / centroids[i].count
+                    };
+                }
+                return p;
+            });
+        }
+
+        // HATCH
+        const hatchPresets = {
+            smooth: { spacing: 24, length: 20, direction: 45, variation: 15, scale: 0.003, stroke: 1.5, opacity: 0.9 },
+            rain: { spacing: 20, length: 28, direction: 70, variation: 10, scale: 0.002, stroke: 1, opacity: 0.85 },
+            wave: { spacing: 26, length: 22, direction: 30, variation: 25, scale: 0.004, stroke: 1.5, opacity: 0.9 },
+            chaotic: { spacing: 20, length: 18, direction: 0, variation: 60, scale: 0.012, stroke: 1.25, opacity: 0.8 }
+        };
+
+        function applyHatchPreset(name) {
+            const p = hatchPresets[name];
+            document.getElementById('hatch-spacing').value = p.spacing;
+            document.getElementById('hatch-length').value = p.length;
+            document.getElementById('hatch-direction').value = p.direction;
+            document.getElementById('hatch-variation').value = p.variation;
+            document.getElementById('hatch-scale').value = p.scale;
+            document.getElementById('hatch-stroke').value = p.stroke;
+            document.getElementById('hatch-opacity').value = p.opacity;
+            generateHatch();
+        }
+
+        function generateHatch() {
+            const spacing = parseInt(document.getElementById('hatch-spacing').value);
+            const lineLength = parseInt(document.getElementById('hatch-length').value);
+            const direction = parseFloat(document.getElementById('hatch-direction').value);
+            const variation = parseFloat(document.getElementById('hatch-variation').value);
+            const scale = parseFloat(document.getElementById('hatch-scale').value);
+            const strokeWidth = parseFloat(document.getElementById('hatch-stroke').value);
+            const opacity = parseFloat(document.getElementById('hatch-opacity').value);
+            const seed = parseInt(document.getElementById('hatch-seed').value);
+            const size = parseInt(document.getElementById('canvasSize').value);
+            const strokeColor = document.getElementById('strokeColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+
+            // Update displays
+            document.getElementById('hatch-spacing-val').textContent = spacing;
+            document.getElementById('hatch-length-val').textContent = lineLength;
+            document.getElementById('hatch-direction-val').textContent = direction + '°';
+            document.getElementById('hatch-variation-val').textContent = variation + '°';
+            document.getElementById('hatch-scale-val').textContent = scale;
+            document.getElementById('hatch-stroke-val').textContent = strokeWidth;
+            document.getElementById('hatch-opacity-val').textContent = opacity;
+            document.getElementById('hatch-seed-val').textContent = seed;
+
+            noise = new SimplexNoise(seed);
+
+            const canvas = document.getElementById('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth;
+            ctx.globalAlpha = opacity;
+            ctx.lineCap = 'round';
+
+            const lines = [];
+            const halfLen = lineLength / 2;
+            const baseAngle = direction * Math.PI / 180; // Convert to radians
+            const variationRad = variation * Math.PI / 180; // Variation in radians
+
+            // Generate grid of lines with noise-based angles
+            for (let y = spacing / 2; y < size; y += spacing) {
+                for (let x = spacing / 2; x < size; x += spacing) {
+                    // Get smooth variation from noise field
+                    const noiseVal = noise.noise2D(x * scale, y * scale);
+                    // Base angle + smooth noise variation
+                    const angle = baseAngle + (noiseVal * variationRad);
+
+                    // Calculate line endpoints
+                    const dx = Math.cos(angle) * halfLen;
+                    const dy = Math.sin(angle) * halfLen;
+
+                    const x1 = x - dx;
+                    const y1 = y - dy;
+                    const x2 = x + dx;
+                    const y2 = y + dy;
+
+                    // Draw on canvas
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+
+                    lines.push({ x1, y1, x2, y2 });
+                }
+            }
+
+            ctx.globalAlpha = 1;
+
+            // Generate SVG
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+                <rect width="${size}" height="${size}" fill="${bgColor}"/>
+                ${lines.map(l => `<line x1="${l.x1.toFixed(1)}" y1="${l.y1.toFixed(1)}" x2="${l.x2.toFixed(1)}" y2="${l.y2.toFixed(1)}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" opacity="${opacity}"/>`).join('\n')}
+            </svg>`;
+
+            document.getElementById('canvas-container').style.background = bgColor;
+        }
+
+        // DEPTH TOPO
+        const depthTopoPresets = {
+            terrain: { levels: 20, stroke: 0.75, opacity: 0.6, smoothing: 2, resolution: 3 },
+            fine: { levels: 35, stroke: 0.5, opacity: 0.5, smoothing: 1, resolution: 2 },
+            bold: { levels: 12, stroke: 1.5, opacity: 0.8, smoothing: 3, resolution: 4 },
+            minimal: { levels: 8, stroke: 1.0, opacity: 0.7, smoothing: 4, resolution: 5 }
+        };
+
+        function applyDepthTopoPreset(name) {
+            const p = depthTopoPresets[name];
+            document.getElementById('depthtopo-levels').value = p.levels;
+            document.getElementById('depthtopo-stroke').value = p.stroke;
+            document.getElementById('depthtopo-opacity').value = p.opacity;
+            document.getElementById('depthtopo-smoothing').value = p.smoothing;
+            document.getElementById('depthtopo-resolution').value = p.resolution;
+            generateDepthTopo();
+        }
+
+        let depthTopoImageUrl = null;
+
+        async function handleDepthTopoImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name;
+            document.getElementById('depthtopo-filename').textContent = 'Loading image...';
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                depthTopoImageUrl = e.target.result;
+
+                const img = new Image();
+                img.onload = async function() {
+                    depthTopoImage = img;
+
+                    const tempCanvas = document.createElement('canvas');
+                    const maxDim = 500;
+
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxDim || height > maxDim) {
+                        const scale = maxDim / Math.max(width, height);
+                        width = Math.floor(width * scale);
+                        height = Math.floor(height * scale);
+                    }
+
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.drawImage(img, 0, 0, width, height);
+
+                    depthTopoImageData = tempCtx.getImageData(0, 0, width, height);
+
+                    // Try AI depth estimation first
+                    if (window.depthPipelineReady && window.TransformersDepthPipeline) {
+                        document.getElementById('depthtopo-filename').textContent = 'Generating AI depth map...';
+                        try {
+                            const depthResult = await window.TransformersDepthPipeline(depthTopoImageUrl);
+                            depthMapData = convertDepthResultToMap(depthResult, width, height);
+                            document.getElementById('depthtopo-filename').textContent = fileName + ' (AI depth)';
+                        } catch (error) {
+                            console.error('AI depth failed, using luminance:', error);
+                            depthMapData = computeDepthMap(depthTopoImageData);
+                            document.getElementById('depthtopo-filename').textContent = fileName + ' (luminance fallback)';
+                        }
+                    } else {
+                        // Fallback to luminance
+                        depthMapData = computeDepthMap(depthTopoImageData);
+                        document.getElementById('depthtopo-filename').textContent = fileName + ' (loading AI...)';
+
+                        // Try to init the pipeline if not ready
+                        if (!window.depthPipelineLoading && !window.depthPipelineReady) {
+                            window.initDepthPipeline();
+                        }
+                    }
+
+                    generateDepthTopo();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function regenerateAIDepth() {
+            if (!depthTopoImageUrl || !depthTopoImage) {
+                document.getElementById('depthtopo-filename').textContent = 'Upload an image first';
+                return;
+            }
+
+            if (!window.depthPipelineReady) {
+                document.getElementById('depthtopo-filename').textContent = 'AI model still loading...';
+                if (!window.depthPipelineLoading) {
+                    window.initDepthPipeline();
+                }
+                return;
+            }
+
+            const width = depthTopoImageData.width;
+            const height = depthTopoImageData.height;
+
+            document.getElementById('depthtopo-filename').textContent = 'Generating AI depth map...';
+
+            try {
+                const depthResult = await window.TransformersDepthPipeline(depthTopoImageUrl);
+                depthMapData = convertDepthResultToMap(depthResult, width, height);
+                document.getElementById('depthtopo-filename').textContent = 'AI depth generated';
+                generateDepthTopo();
+            } catch (error) {
+                console.error('AI depth failed:', error);
+                document.getElementById('depthtopo-filename').textContent = 'AI depth failed - check console';
+            }
+        }
+
+        function convertDepthResultToMap(depthResult, targetWidth, targetHeight) {
+            const depthData = depthResult.depth.data;
+            const depthWidth = depthResult.depth.width;
+            const depthHeight = depthResult.depth.height;
+
+            const depthMap = [];
+
+            for (let y = 0; y < targetHeight; y++) {
+                depthMap[y] = [];
+                for (let x = 0; x < targetWidth; x++) {
+                    // Map coordinates from target to depth result
+                    const srcX = Math.floor(x * depthWidth / targetWidth);
+                    const srcY = Math.floor(y * depthHeight / targetHeight);
+                    const idx = srcY * depthWidth + srcX;
+
+                    // Depth values are typically 0-255, normalize to 0-1
+                    depthMap[y][x] = depthData[idx] / 255;
+                }
+            }
+
+            return depthMap;
+        }
+
+        function computeDepthMap(imageData) {
+            const width = imageData.width;
+            const height = imageData.height;
+            const data = imageData.data;
+            const depthMap = [];
+
+            for (let y = 0; y < height; y++) {
+                depthMap[y] = [];
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+
+                    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+                    depthMap[y][x] = luminance / 255;
+                }
+            }
+
+            return depthMap;
+        }
+
+        function applyGaussianBlur(depthMap, radius) {
+            if (radius === 0) return depthMap;
+
+            const height = depthMap.length;
+            const width = depthMap[0].length;
+
+            const kernelSize = radius * 2 + 1;
+            const kernel = [];
+            const sigma = radius / 2 || 0.5;
+            let sum = 0;
+
+            for (let i = 0; i < kernelSize; i++) {
+                const x = i - radius;
+                kernel[i] = Math.exp(-(x * x) / (2 * sigma * sigma));
+                sum += kernel[i];
+            }
+
+            for (let i = 0; i < kernelSize; i++) {
+                kernel[i] /= sum;
+            }
+
+            // Horizontal pass
+            const temp = [];
+            for (let y = 0; y < height; y++) {
+                temp[y] = [];
+                for (let x = 0; x < width; x++) {
+                    let val = 0;
+                    for (let k = 0; k < kernelSize; k++) {
+                        const sx = Math.min(Math.max(x + k - radius, 0), width - 1);
+                        val += depthMap[y][sx] * kernel[k];
+                    }
+                    temp[y][x] = val;
+                }
+            }
+
+            // Vertical pass
+            const result = [];
+            for (let y = 0; y < height; y++) {
+                result[y] = [];
+                for (let x = 0; x < width; x++) {
+                    let val = 0;
+                    for (let k = 0; k < kernelSize; k++) {
+                        const sy = Math.min(Math.max(y + k - radius, 0), height - 1);
+                        val += temp[sy][x] * kernel[k];
+                    }
+                    result[y][x] = val;
+                }
+            }
+
+            return result;
+        }
+
+        function drawDepthMapVisualization(ctx, depthMap, width, height) {
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const gray = Math.floor(depthMap[y][x] * 255);
+                    data[idx] = gray;
+                    data[idx + 1] = gray;
+                    data[idx + 2] = gray;
+                    data[idx + 3] = 255;
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function drawDepthTopoPlaceholder() {
+            const canvasIds = ['canvas-original', 'canvas-depthmap', 'canvas-topo-result'];
+            const labels = ['Upload an image', 'Depth map preview', 'Topo result'];
+            const placeholderSize = 300;
+
+            canvasIds.forEach((id, index) => {
+                const canvas = document.getElementById(id);
+                canvas.width = placeholderSize;
+                canvas.height = placeholderSize;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, placeholderSize, placeholderSize);
+
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 8]);
+                ctx.strokeRect(20, 20, placeholderSize - 40, placeholderSize - 40);
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#444';
+                ctx.font = '12px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(labels[index], placeholderSize / 2, placeholderSize / 2);
+            });
+
+            svgContent = '';
+        }
+
+        function generateDepthTopo() {
+            const levels = parseInt(document.getElementById('depthtopo-levels').value);
+            const strokeWidth = parseFloat(document.getElementById('depthtopo-stroke').value);
+            const opacity = parseFloat(document.getElementById('depthtopo-opacity').value);
+            const smoothing = parseInt(document.getElementById('depthtopo-smoothing').value);
+            const resolution = parseInt(document.getElementById('depthtopo-resolution').value);
+            const invert = document.getElementById('depthtopo-invert').checked;
+            const contourColor = document.getElementById('depthtopo-contour-color').value;
+            const bgColor = document.getElementById('depthtopo-bg-color').value;
+
+            // Update displays
+            document.getElementById('depthtopo-levels-val').textContent = levels;
+            document.getElementById('depthtopo-stroke-val').textContent = strokeWidth;
+            document.getElementById('depthtopo-opacity-val').textContent = opacity;
+            document.getElementById('depthtopo-smoothing-val').textContent = smoothing;
+            document.getElementById('depthtopo-resolution-val').textContent = resolution;
+
+            if (!depthTopoImage || !depthMapData) {
+                drawDepthTopoPlaceholder();
+                return;
+            }
+
+            const width = depthTopoImageData.width;
+            const height = depthTopoImageData.height;
+
+            // Canvas 1: Original Image
+            const canvasOriginal = document.getElementById('canvas-original');
+            canvasOriginal.width = width;
+            canvasOriginal.height = height;
+            const ctxOriginal = canvasOriginal.getContext('2d');
+            ctxOriginal.drawImage(depthTopoImage, 0, 0, width, height);
+
+            // Apply smoothing to depth map
+            let processedDepthMap = applyGaussianBlur(depthMapData, smoothing);
+
+            // Apply inversion if checked
+            if (invert) {
+                processedDepthMap = processedDepthMap.map(row => row.map(val => 1 - val));
+            }
+
+            // Canvas 2: Depth Map visualization
+            const canvasDepth = document.getElementById('canvas-depthmap');
+            canvasDepth.width = width;
+            canvasDepth.height = height;
+            const ctxDepth = canvasDepth.getContext('2d');
+            drawDepthMapVisualization(ctxDepth, processedDepthMap, width, height);
+
+            // Canvas 3: Topo Result
+            const canvasTopo = document.getElementById('canvas-topo-result');
+            canvasTopo.width = width;
+            canvasTopo.height = height;
+            const ctxTopo = canvasTopo.getContext('2d');
+
+            ctxTopo.fillStyle = bgColor;
+            ctxTopo.fillRect(0, 0, width, height);
+
+            ctxTopo.strokeStyle = contourColor;
+            ctxTopo.lineWidth = strokeWidth;
+            ctxTopo.globalAlpha = opacity;
+
+            let allPaths = [];
+
+            // Calculate grid dimensions based on resolution
+            const cols = Math.floor(width / resolution);
+            const rows = Math.floor(height / resolution);
+
+            // Marching squares for contour lines (with resolution-based grid)
+            for (let level = 0; level < levels; level++) {
+                const threshold = level / levels;
+
+                for (let gy = 0; gy < rows - 1; gy++) {
+                    for (let gx = 0; gx < cols - 1; gx++) {
+                        // Sample depth map at grid positions
+                        const y1 = Math.min(gy * resolution, height - 1);
+                        const y2 = Math.min((gy + 1) * resolution, height - 1);
+                        const x1 = Math.min(gx * resolution, width - 1);
+                        const x2 = Math.min((gx + 1) * resolution, width - 1);
+
+                        const tl = processedDepthMap[y1][x1] > threshold ? 1 : 0;
+                        const tr = processedDepthMap[y1][x2] > threshold ? 1 : 0;
+                        const br = processedDepthMap[y2][x2] > threshold ? 1 : 0;
+                        const bl = processedDepthMap[y2][x1] > threshold ? 1 : 0;
+
+                        const state = tl * 8 + tr * 4 + br * 2 + bl;
+
+                        // Get contour lines at actual pixel coordinates
+                        const px = gx * resolution;
+                        const py = gy * resolution;
+                        const lines = getContourLines(state, px, py, resolution);
+
+                        for (const line of lines) {
+                            ctxTopo.beginPath();
+                            ctxTopo.moveTo(line.x1, line.y1);
+                            ctxTopo.lineTo(line.x2, line.y2);
+                            ctxTopo.stroke();
+                            allPaths.push(`M${line.x1.toFixed(1)},${line.y1.toFixed(1)}L${line.x2.toFixed(1)},${line.y2.toFixed(1)}`);
+                        }
+                    }
+                }
+            }
+
+            ctxTopo.globalAlpha = 1;
+
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+                <rect width="${width}" height="${height}" fill="${bgColor}"/>
+                ${allPaths.map(d => `<path d="${d}" fill="none" stroke="${contourColor}" stroke-width="${strokeWidth}" opacity="${opacity}"/>`).join('\n')}
+            </svg>`;
+        }
+
+        function randomize() {
+            if (currentTab === 'depthtopo') {
+                return; // No randomization for depth topo
+            }
+            const seedEl = document.getElementById(`${currentTab}-seed`);
+            seedEl.value = Math.floor(Math.random() * 9999);
+            regenerate();
+        }
+        
+        function exportSVG() {
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentTab}-pattern-${Date.now()}.svg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPNG() {
+            let canvas;
+
+            // For depth topo, export the topo result canvas
+            if (currentTab === 'depthtopo') {
+                canvas = document.getElementById('canvas-topo-result');
+            } else {
+                canvas = document.getElementById('canvas');
+            }
+
+            if (!canvas) return;
+
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentTab}-pattern-${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function copySVG() {
+            const btn = event.target;
+            
+            // Fallback method that works on local files
+            const textarea = document.createElement('textarea');
+            textarea.value = svgContent;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                const original = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#4a9';
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.style.background = '#333';
+                }, 1500);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+        
+        // Initialize
+        generateFlow();
+    </script>
+</body>
+</html>
